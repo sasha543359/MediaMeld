@@ -8,6 +8,7 @@ using InstaSharper.API.Builder;  // Для создания сессии Instagr
 using InstaSharper.Classes;  // Для работы с данными сессии и видеофайлами
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Telegram.Bot.Types;
 
 namespace PapichProject;
 
@@ -31,6 +32,15 @@ internal class Program
         }
 
         ProcessVideo(video, $"C:\\Users\\sasha\\Desktop\\video1.mp4");
+
+        AddImageToVideo($"C:\\Users\\sasha\\Desktop\\video1.mp4",
+                        $"C:\\Users\\sasha\\Desktop\\win.png",
+                        $"C:\\Users\\sasha\\Desktop\\video2.mp4", 
+                        296, 132);
+
+        AddVideoWithChromaKey($"C:\\Users\\sasha\\Desktop\\video2.mp4", 
+                              $"C:\\Users\\sasha\\Desktop\\papich.mp4", 
+                              $"C:\\Users\\sasha\\Desktop\\video3.mp4", 1250, 2200); // 518, 1556
     }
 
     // Метод для получения ссылки на скачивание видео через API
@@ -138,5 +148,74 @@ internal class Program
         {
             Console.WriteLine($"Ошибка при обработке видео: {ex.Message}");
         }
+    }
+
+    static void AddImageToVideo(string videoPath, string imagePath, string outputPath, int x, int y)
+    {
+
+        Thread.Sleep(3000);
+
+        try
+        {
+            // Используем фильтр overlay для наложения изображения на видео по заданным координатам
+            FFMpegArguments
+                .FromFileInput(videoPath)  // Входное видео
+                .AddFileInput(imagePath)    // Входное изображение
+                .OutputToFile(outputPath, true, options => options
+                    .WithCustomArgument($"-filter_complex \"[0:v][1:v] overlay={x}:{y}\"")  // Наложение изображения по координатам x:y
+                )
+                .ProcessSynchronously();  // Запуск синхронного процесса
+
+            Console.WriteLine("Изображение успешно добавлено к видео.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при добавлении изображения: {ex.Message}");
+        }
+    }
+
+    static void AddVideoWithChromaKey(string backgroundVideoPath, string overlayVideoPath, string outputPath, int x, int y)
+    {
+        Thread.Sleep(4000);
+
+        try
+        {
+            // Получаем длительность основного видео
+            TimeSpan backgroundDuration = GetVideoDuration(backgroundVideoPath);
+            Console.WriteLine($"Длительность основного видео: {backgroundDuration.TotalSeconds} секунд");
+
+            // Получаем длительность видео с хромакеем
+            TimeSpan overlayDuration = GetVideoDuration(overlayVideoPath);
+            Console.WriteLine($"Длительность видео с хромакеем: {overlayDuration.TotalSeconds} секунд");
+
+            // Рассчитываем, сколько раз нужно повторить видео с хромакеем
+            int loopCount = (int)Math.Ceiling(backgroundDuration.TotalSeconds / overlayDuration.TotalSeconds);
+            Console.WriteLine($"Количество повторов: {loopCount}");
+
+            // Рассчитываем количество кадров для видео с хромакеем
+            int overlayFrameCount = (int)Math.Ceiling(overlayDuration.TotalSeconds * 59.94);  // Предполагаем, что FPS = 59.94
+            Console.WriteLine($"Количество кадров для видео с хромакеем: {overlayFrameCount}");
+
+            // Настроенный фильтр chromakey с уменьшенной чувствительностью
+            FFMpegArguments
+                .FromFileInput(backgroundVideoPath)  // Фон: видео
+                .AddFileInput(overlayVideoPath)      // Видеоролик с зелёным фоном
+                .OutputToFile(outputPath, true, options => options
+                    .WithCustomArgument($"-filter_complex \"[1:v]loop=loop={loopCount - 1}:size={overlayFrameCount}:start=0, chromakey=0x00FF01:0.1:0.05[ckout];[0:v][ckout] overlay=0:0, scale=1080:1920\"")
+                )
+                .ProcessSynchronously();  // Запуск синхронного процесса
+
+            Console.WriteLine("Видео с хромакеем успешно добавлено.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при добавлении видео с хромакеем: {ex.Message}");
+        }
+    }
+
+    public static TimeSpan GetVideoDuration(string videoPath)
+    {
+        var mediaInfo = FFProbe.Analyse(videoPath);
+        return mediaInfo.Duration;
     }
 }
