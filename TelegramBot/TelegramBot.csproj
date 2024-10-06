@@ -9,9 +9,12 @@
 
   <ItemGroup>
     <PackageReference Include="FFMpegCore" Version="5.1.0" />
-    <PackageReference Include="InstaSharper" Version="1.4.82" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Telegram.Bot" Version="19.0.0" />
+    <PackageReference Include="Telegram.Bot" Version="18.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PapichProject\VideoProcessing.csproj" />
+    <ProjectReference Include="..\PaymentService(NOWPaymentsService)\PaymentService(NOWPaymentsService).csproj" />
   </ItemGroup>
 
 </Project>

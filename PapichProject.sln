@@ -3,7 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PapichProject", "PapichProject\PapichProject.csproj", "{E0C49F3E-9951-48FB-B13D-78C1C63552C0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VideoProcessing", "PapichProject\VideoProcessing.csproj", "{E0C49F3E-9951-48FB-B13D-78C1C63552C0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TelegramBot", "TelegramBot\TelegramBot.csproj", "{66DC9FF3-97EB-459E-A7A6-B02A30FBF2BE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{D7C5CEC4-E1BF-4118-AD60-B844E2D5AF2C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentService(NOWPaymentsService)", "PaymentService(NOWPaymentsService)\PaymentService(NOWPaymentsService).csproj", "{7812971E-7F75-49CC-8F87-9513D4749450}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +21,18 @@ Global
 		{E0C49F3E-9951-48FB-B13D-78C1C63552C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E0C49F3E-9951-48FB-B13D-78C1C63552C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E0C49F3E-9951-48FB-B13D-78C1C63552C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66DC9FF3-97EB-459E-A7A6-B02A30FBF2BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66DC9FF3-97EB-459E-A7A6-B02A30FBF2BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66DC9FF3-97EB-459E-A7A6-B02A30FBF2BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66DC9FF3-97EB-459E-A7A6-B02A30FBF2BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7C5CEC4-E1BF-4118-AD60-B844E2D5AF2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7C5CEC4-E1BF-4118-AD60-B844E2D5AF2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7C5CEC4-E1BF-4118-AD60-B844E2D5AF2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7C5CEC4-E1BF-4118-AD60-B844E2D5AF2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7812971E-7F75-49CC-8F87-9513D4749450}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7812971E-7F75-49CC-8F87-9513D4749450}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7812971E-7F75-49CC-8F87-9513D4749450}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7812971E-7F75-49CC-8F87-9513D4749450}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
