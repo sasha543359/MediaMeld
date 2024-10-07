@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using PaymentService_NOWPaymentsService_.Models;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace PaymentService_NOWPaymentsService_.Services;
 
@@ -40,7 +42,7 @@ public class NowPaymentsService : INowPaymentsService
     }
 
     // Метод для создания платежа
-    public async Task CreatePayment(string apiKey, string amount, string currency, string orderId)
+    public async Task<CreatePaymentResponse> CreatePayment(string apiKey, string amount, string currency, string orderId)
     {
         _httpClient.DefaultRequestHeaders.Clear();
         _httpClient.DefaultRequestHeaders.Add("x-api-key", apiKey);
@@ -52,16 +54,19 @@ public class NowPaymentsService : INowPaymentsService
         if (response.IsSuccessStatusCode)
         {
             var jsonResponse = await response.Content.ReadAsStringAsync();
-            Console.WriteLine("Платеж успешно создан: " + jsonResponse);
+            var paymentResponse = JsonConvert.DeserializeObject<CreatePaymentResponse>(jsonResponse); // Десериализуем ответ в объект
+            return paymentResponse; // Возвращаем объект с данными о платеже
         }
         else
         {
             Console.WriteLine("Ошибка при создании платежа: " + response.StatusCode);
+            return null; // Возвращаем null в случае ошибки
         }
     }
 
+
     // Метод для получения статуса платежа
-    public async Task GetPaymentStatus(string apiKey, string paymentId)
+    public async Task<PaymentStatusResponse> GetPaymentStatus(string apiKey, string paymentId)
     {
         _httpClient.DefaultRequestHeaders.Clear();
         _httpClient.DefaultRequestHeaders.Add("x-api-key", apiKey);
@@ -71,13 +76,16 @@ public class NowPaymentsService : INowPaymentsService
         if (response.IsSuccessStatusCode)
         {
             var jsonResponse = await response.Content.ReadAsStringAsync();
-            Console.WriteLine("Статус платежа: " + jsonResponse);
+            var statusResponse = JsonConvert.DeserializeObject<PaymentStatusResponse>(jsonResponse); // Десериализуем ответ в объект
+            return statusResponse; // Возвращаем объект с данными о статусе платежа
         }
         else
         {
             Console.WriteLine("Ошибка при получении статуса платежа: " + response.StatusCode);
+            return null; // Возвращаем null в случае ошибки
         }
     }
+
 
     // Метод для получения минимальной суммы платежа
     public async Task GetMinimumPaymentAmount(string apiKey, string currencyFrom, string currencyTo)

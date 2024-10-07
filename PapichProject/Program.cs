@@ -46,11 +46,11 @@ internal class Program
 
 
         AddVideoWithChromaKey($"C:\\Users\\sasha\\Desktop\\video1.mp4",
-                              $"C:\\Users\\sasha\\Desktop\\test1.mp4",
-                              $"C:\\Users\\sasha\\Desktop\\gaf.mp4"); // 518, 1556
+                              $"C:\\Users\\sasha\\Desktop\\testing.mov",
+                              $"C:\\Users\\sasha\\Desktop\\result.mp4"); 
     }
 
-    static public void AddVideoWithChromaKey(string backgroundVideoPath, string overlayVideoPath, string outputPath, int xOffset = 0)
+    static public void AddVideoWithChromaKey(string backgroundVideoPath, string overlayVideoPath, string outputPath)
     {
         Thread.Sleep(4000);
 
@@ -58,39 +58,34 @@ internal class Program
 
         try
         {
+            // Get background video information
+            var backgroundInfo = FFProbe.Analyse(backgroundVideoPath);
+            int backgroundWidth = backgroundInfo.PrimaryVideoStream.Width;
+            int backgroundHeight = backgroundInfo.PrimaryVideoStream.Height;
 
-            // Получаем длительность основного видео
-            TimeSpan backgroundDuration = GetVideoDuration(backgroundVideoPath);
-            Console.WriteLine($"Длительность основного видео: {backgroundDuration.TotalSeconds} секунд");
-
-            // Получаем длительность и размеры видео с хромакеем
+            // Get overlay (green screen) video information
             var overlayInfo = FFProbe.Analyse(overlayVideoPath);
-            TimeSpan overlayDuration = overlayInfo.Duration;
             int overlayWidth = overlayInfo.PrimaryVideoStream.Width;
             int overlayHeight = overlayInfo.PrimaryVideoStream.Height;
+            TimeSpan overlayDuration = overlayInfo.Duration;
 
-            Console.WriteLine($"Длительность видео с хромакеем: {overlayDuration.TotalSeconds} секунд");
-            Console.WriteLine($"Размеры видео с хромакеем: {overlayWidth}x{overlayHeight}");
-
-            // Рассчитываем, сколько раз нужно повторить видео с хромакеем
+            // Calculate the number of loops for the overlay video
+            TimeSpan backgroundDuration = backgroundInfo.Duration;
             int loopCount = (int)Math.Ceiling(backgroundDuration.TotalSeconds / overlayDuration.TotalSeconds);
-            Console.WriteLine($"Количество повторов: {loopCount}");
+            int overlayFrameCount = (int)Math.Ceiling(overlayDuration.TotalSeconds * 59.94);  // Assuming FPS = 59.94
 
-            // Рассчитываем количество кадров для видео с хромакеем
-            int overlayFrameCount = (int)Math.Ceiling(overlayDuration.TotalSeconds * 59.94);  // Предполагаем, что FPS = 59.94
-            Console.WriteLine($"Количество кадров для видео с хромакеем: {overlayFrameCount}");
+            // Calculate the x and y position to center the overlay horizontally and place it at the bottom
+            int xPos = (backgroundWidth - overlayWidth) / 2;
+            int yPos = backgroundHeight - overlayHeight;
 
-            // Простой тест: устанавливаем yPos на 0
-            int yPos = 0;
-
-            // Настроенный фильтр chromakey с измененной чувствительностью
+            // Set chroma key filter with adjusted xPos and yPos
             FFMpegArguments
-                .FromFileInput(backgroundVideoPath)  // Фон: видео
-                .AddFileInput(overlayVideoPath)      // Видеоролик с зелёным фоном
+                .FromFileInput(backgroundVideoPath)  // Background video
+                .AddFileInput(overlayVideoPath)      // Overlay video (green screen)
                 .OutputToFile(outputPath, true, options => options
-                    .WithCustomArgument($"-filter_complex \"[1:v]loop=loop={loopCount - 1}:size={overlayFrameCount}:start=0, chromakey=0x00FF00:0.2:0.1[ckout];[0:v][ckout] overlay={xOffset}:{yPos}, scale=1080:1920\"")
+                    .WithCustomArgument($"-filter_complex \"[1:v]loop=loop={loopCount - 1}:size={overlayFrameCount}:start=0, chromakey=0x00FF00:0.2:0.1[ckout];[0:v][ckout] overlay={xPos}:{yPos}, scale={backgroundWidth}:{backgroundHeight}\"")
                 )
-                .ProcessSynchronously();  // Запуск синхронного процесса
+                .ProcessSynchronously();  // Run the process synchronously
 
             Console.WriteLine("Видео с хромакеем успешно добавлено.");
         }

@@ -6,4 +6,5 @@ public class UserSession
     public string ChromaVideoPath { get; set; }  // Путь к видео с хромакеем
     public string Status { get; set; }  // Статус сессии пользователя
     public long? LastMessageId { get; set; }  // Последний ID сообщения для удаления
+    public string PaymentId { get; set; } // Для хранения Payment ID
 }
