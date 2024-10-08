@@ -1,4 +1,4 @@
-﻿using PaymentService_NOWPaymentsService_.Models;
+﻿using Domain.Models;
 
 namespace PaymentService_NOWPaymentsService_;
 

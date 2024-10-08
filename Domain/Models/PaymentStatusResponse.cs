@@ -1,9 +1,10 @@
 ﻿using Newtonsoft.Json;
 
-namespace PaymentService_NOWPaymentsService_.Models;
+namespace Domain.Models;
 
 public class PaymentStatusResponse
 {
+
     [JsonProperty("payment_id")]
     public string PaymentId { get; set; }
 

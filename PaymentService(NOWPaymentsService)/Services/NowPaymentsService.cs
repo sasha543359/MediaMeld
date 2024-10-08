@@ -1,6 +1,6 @@
-﻿using PaymentService_NOWPaymentsService_.Models;
-using System.Text;
+﻿using System.Text;
 using Newtonsoft.Json;
+using Domain.Models;
 
 namespace PaymentService_NOWPaymentsService_.Services;
 
@@ -64,7 +64,6 @@ public class NowPaymentsService : INowPaymentsService
         }
     }
 
-
     // Метод для получения статуса платежа
     public async Task<PaymentStatusResponse> GetPaymentStatus(string apiKey, string paymentId)
     {
@@ -85,7 +84,6 @@ public class NowPaymentsService : INowPaymentsService
             return null; // Возвращаем null в случае ошибки
         }
     }
-
 
     // Метод для получения минимальной суммы платежа
     public async Task GetMinimumPaymentAmount(string apiKey, string currencyFrom, string currencyTo)
