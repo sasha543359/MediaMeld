@@ -95,14 +95,12 @@ public class VideoProcessingService : IVideoProcessingService
 
         try
         {
-            // Удаление метаданных и изменение разрешения видео на 9:16 с 60 FPS
+            // Масштабирование до 1080x1920 и центрирование видео
             FFMpegArguments
-                .FromFileInput(inputVideoPath)  // Входной файл
+                .FromFileInput(inputVideoPath)
                 .OutputToFile(outputVideoPath, true, options => options
-                    .WithVideoFilters(filter => filter
-                        .Scale(1080, 1920)  // Масштабирование до 1080x1920 (9:16)
-                    )
-                    .WithFramerate(60)  // Установка 60 FPS
+                    .WithCustomArgument("-vf \"scale=1080:-1,pad=1080:1920:(ow-iw)/2:(oh-ih)/2\"") // Масштабируем и центрируем видео
+                    .WithFramerate(60)  // Устанавливаем 60 FPS
                     .WithCustomArgument("-map_metadata -1")  // Удаление метаданных
                 )
                 .ProcessSynchronously();  // Запуск синхронного процесса
