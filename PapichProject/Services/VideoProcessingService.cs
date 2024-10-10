@@ -115,30 +115,6 @@ public class VideoProcessingService : IVideoProcessingService
         }
     }
 
-    public void AddImageToVideo(string videoPath, string imagePath, string outputPath, int x, int y)
-    {
-
-        Thread.Sleep(3000);
-
-        try
-        {
-            // Используем фильтр overlay для наложения изображения на видео по заданным координатам
-            FFMpegArguments
-                .FromFileInput(videoPath)  // Входное видео
-                .AddFileInput(imagePath)    // Входное изображение
-                .OutputToFile(outputPath, true, options => options
-                    .WithCustomArgument($"-filter_complex \"[0:v][1:v] overlay={x}:{y}\"")  // Наложение изображения по координатам x:y
-                )
-                .ProcessSynchronously();  // Запуск синхронного процесса
-
-            Console.WriteLine("Изображение успешно добавлено к видео.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Ошибка при добавлении изображения: {ex.Message}");
-        }
-    }
-
     public void AddVideoWithChromaKey(string backgroundVideoPath, string overlayVideoPath, string outputPath, int x, int y)
     {
         Thread.Sleep(4000);
@@ -166,7 +142,7 @@ public class VideoProcessingService : IVideoProcessingService
                 .FromFileInput(backgroundVideoPath)  // Фон: видео
                 .AddFileInput(overlayVideoPath)      // Видеоролик с зелёным фоном
                 .OutputToFile(outputPath, true, options => options
-                    .WithCustomArgument($"-filter_complex \"[1:v]loop=loop={loopCount - 1}:size={overlayFrameCount}:start=0, chromakey=0x00FF00:0.2:0.1[ckout];[0:v][ckout] overlay=0:0, scale=1080:1920\"") // chromakey=0x00FF01:0.1:0.05[ckout];[0:v][ckout]
+                    .WithCustomArgument($"-filter_complex \"[1:v]loop=loop={loopCount - 1}:size={overlayFrameCount}:start=0, chromakey=0x00FF00:0.2:0.1[ckout];[0:v][ckout] overlay=0:0\"") // chromakey=0x00FF01:0.1:0.05[ckout];[0:v][ckout]
                 )
                 .ProcessSynchronously();  // Запуск синхронного процесса
 
@@ -182,5 +158,29 @@ public class VideoProcessingService : IVideoProcessingService
     {
         var mediaInfo = FFProbe.Analyse(videoPath);
         return mediaInfo.Duration;
+    }
+
+    public void AddImageToVideo(string videoPath, string imagePath, string outputPath, int x, int y)
+    {
+
+        Thread.Sleep(3000);
+
+        try
+        {
+            // Используем фильтр overlay для наложения изображения на видео по заданным координатам
+            FFMpegArguments
+                .FromFileInput(videoPath)  // Входное видео
+                .AddFileInput(imagePath)    // Входное изображение
+                .OutputToFile(outputPath, true, options => options
+                    .WithCustomArgument($"-filter_complex \"[0:v][1:v] overlay={x}:{y}\"")  // Наложение изображения по координатам x:y
+                )
+                .ProcessSynchronously();  // Запуск синхронного процесса
+
+            Console.WriteLine("Изображение успешно добавлено к видео.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при добавлении изображения: {ex.Message}");
+        }
     }
 }

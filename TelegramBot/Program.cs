@@ -26,28 +26,29 @@ internal class Program
     {
         // Ваш API-ключ для Telegram бота
         string token = "7946448900:AAGJZqNHXqTQ44XDW38zhdhHTmkkyu4Tjcg";
+        string api_token_payments = "HWHWJ12-XMBMH68-GSH7XSV-5YE60WJ";
 
-        //var connectionString = "Server=San4o\\SQLEXPRESS;Database=TelegramDB;trusted_connection=True;TrustServerCertificate=True;";
+        var connectionString = "Server=San4o\\SQLEXPRESS;Database=TelegramDB;trusted_connection=True;TrustServerCertificate=True;";
 
-        //// Настраиваем параметры DbContext
-        //var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-        //optionsBuilder.UseSqlServer(connectionString);
+        // Настраиваем параметры DbContext
+        var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+        optionsBuilder.UseSqlServer(connectionString);
 
         // Создаём экземпляр контекста базы данных
-        //using (var dbContext = new AppDbContext(optionsBuilder.Options))
-        //{
+        using (var dbContext = new AppDbContext(optionsBuilder.Options))
+        {
             // Создаём экземпляры сервисов для обработки видео и платежей
             IVideoProcessingService videoService = new VideoProcessingService();  // Реализация вашего сервиса видеообработки
             INowPaymentsService paymentService = new NowPaymentsService();        // Реализация вашего платежного сервиса
 
             // Создаём экземпляр TelegramBotService и передаём в него зависимости
-            var telegramBotService = new TelegramBotService(token, videoService, paymentService);
+            var telegramBotService = new TelegramBotService(token, api_token_payments, videoService, paymentService, dbContext);
 
             // Запускаем бота
             telegramBotService.Start();
 
             Console.WriteLine("Бот запущен. Нажмите Enter для завершения.");
             Console.ReadLine(); // Ожидание завершения программы
-        // }
-    }   
+        }
+    }
 }

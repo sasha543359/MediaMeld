@@ -2,9 +2,12 @@
 
 public class Payment
 {
-    public Guid PaymentId { get; set; } // Уникальный идентификатор платежа (GUID)
+    public Guid Id { get; set; } // Уникальный идентификатор платежа (GUID)
     public Guid? UserId { get; set; } // Внешний ключ на пользователя, может быть null до момента создания пользователя
     public User User { get; set; } // Навигационное свойство пользователя
+
+    public long TelegramId { get; set; } // Telegram ID для идентификации пользователя
+    public string OrderId { get; set; } // Идентификатор заказа
 
     public string PaymentStatus { get; set; } // Статус платежа
     public decimal PriceAmount { get; set; } // Сумма платежа
@@ -15,4 +18,5 @@ public class Payment
     public string PayCurrency { get; set; } // Валюта оплаты
     public string PayinHash { get; set; } // Хэш транзакции
     public string OutcomeCurrency { get; set; } // Валюта, в которой были получены средства
+    public string PaymentId { get; set; }
 }
