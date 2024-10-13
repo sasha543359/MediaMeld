@@ -574,7 +574,7 @@ public class TelegramBotService
 
         // Объединяем с видео с хромакеем
         var finalVideoPath = Path.Combine(Path.GetTempPath(), $"{telegramUserId}_final_video.mp4");
-        _videoService.AddVideoWithChromaKey(processedMainVideoPath, chromaVideoPath, finalVideoPath, 0, 0);
+        _videoService.AddVideoWithChromaKey(processedMainVideoPath, chromaVideoPath, finalVideoPath);
 
         await _botClient.SendTextMessageAsync(telegramUserId, "Видео успешно обработано. Отправляю результат...");
 

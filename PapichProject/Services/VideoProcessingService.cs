@@ -2,6 +2,8 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +12,12 @@ namespace VideoProcessing.Services;
 
 public class VideoProcessingService : IVideoProcessingService
 {
+    static VideoProcessingService()
+    {
+        // https://www.gyan.dev/ffmpeg/builds/
+        GlobalFFOptions.Configure(options => options.BinaryFolder = @"C:\Users\sasha\Desktop\ffmpeg-7.1-essentials_build\bin");
+    }
+
     public async Task<string> GetTikTokDownloadUrl(string videoUrl)
     {
         using HttpClient client = new HttpClient();
@@ -90,9 +98,6 @@ public class VideoProcessingService : IVideoProcessingService
     {
         Thread.Sleep(3000);
 
-        // https://www.gyan.dev/ffmpeg/builds/
-        GlobalFFOptions.Configure(options => options.BinaryFolder = @"C:\Users\sasha\Desktop\ffmpeg-7.1-essentials_build\bin");
-
         try
         {
             // Масштабирование до 1080x1920 и центрирование видео
@@ -113,7 +118,7 @@ public class VideoProcessingService : IVideoProcessingService
         }
     }
 
-    public void AddVideoWithChromaKey(string backgroundVideoPath, string overlayVideoPath, string outputPath, int x, int y)
+    public void AddVideoWithChromaKey(string backgroundVideoPath, string overlayVideoPath, string outputPath)
     {
         Thread.Sleep(4000);
 
@@ -127,29 +132,53 @@ public class VideoProcessingService : IVideoProcessingService
             TimeSpan overlayDuration = GetVideoDuration(overlayVideoPath);
             Console.WriteLine($"Длительность видео с хромакеем: {overlayDuration.TotalSeconds} секунд");
 
-            // Рассчитываем, сколько раз нужно повторить видео с хромакеем
-            int loopCount = (int)Math.Ceiling(backgroundDuration.TotalSeconds / overlayDuration.TotalSeconds);
-            Console.WriteLine($"Количество повторов: {loopCount}");
+            // Рассчитываем количество полных повторов видео с хромакеем
+            int fullLoopCount = (int)(backgroundDuration.TotalSeconds / overlayDuration.TotalSeconds);
+            double remainingSeconds = backgroundDuration.TotalSeconds - (fullLoopCount * overlayDuration.TotalSeconds);
 
-            // Рассчитываем количество кадров для видео с хромакеем
-            int overlayFrameCount = (int)Math.Ceiling(overlayDuration.TotalSeconds * 59.94);  // Предполагаем, что FPS = 59.94
+            Console.WriteLine($"Количество полных повторов: {fullLoopCount}");
+            Console.WriteLine($"Остаток времени для последнего повтора: {remainingSeconds} секунд");
+
+            // Округляем оставшееся время вниз для избежания лишних циклов
+            remainingSeconds = Math.Floor(remainingSeconds);
+            double lastFullLoopEndTime = fullLoopCount * overlayDuration.TotalSeconds;  // Время окончания последнего полного повторения
+            Console.WriteLine($"Время окончания последнего полного повторения: {lastFullLoopEndTime} секунд");
+
+            // Округляем размер (количество кадров) до целого числа
+            int overlayFrameCount = (int)Math.Round(overlayDuration.TotalSeconds * GetVideoFps(overlayVideoPath));
             Console.WriteLine($"Количество кадров для видео с хромакеем: {overlayFrameCount}");
 
-            // Настроенный фильтр chromakey с уменьшенной чувствительностью
+            // Этап 1: Создаем фильтр с циклом для хромакея и fade по альфа-каналу
+            string filterComplex = string.Empty;
+
+            // Создаем циклы для повторов хромакейного видео с мгновенным исчезновением по альфа-каналу после последнего полного повтора
+            filterComplex += $"[1:v]loop=loop={fullLoopCount - 1}:size={overlayFrameCount},chromakey=0x00FF00:0.2:0.1[ckout];" +
+                             $"[ckout]fade=t=out:st={(int)lastFullLoopEndTime}:d=0.01:alpha=1[fadeout];" +  // Мгновенное исчезновение после последнего полного повтора
+                             $"[0:v][fadeout]overlay=0:0";
+
+            // Этап 1: Запуск FFMpeg для полных циклов с fade
             FFMpegArguments
                 .FromFileInput(backgroundVideoPath)  // Фон: видео
                 .AddFileInput(overlayVideoPath)      // Видеоролик с зелёным фоном
                 .OutputToFile(outputPath, true, options => options
-                    .WithCustomArgument($"-filter_complex \"[1:v]loop=loop={loopCount - 1}:size={overlayFrameCount}:start=0, chromakey=0x00FF00:0.2:0.1[ckout];[0:v][ckout] overlay=0:0\"") // chromakey=0x00FF01:0.1:0.05[ckout];[0:v][ckout]
+                    .WithCustomArgument($"-filter_complex \"{filterComplex}\"")
                 )
                 .ProcessSynchronously();  // Запуск синхронного процесса
 
-            Console.WriteLine("Видео с хромакеем успешно добавлено.");
+            Console.WriteLine("Полные циклы обработаны. Видео создано с эффектом прозрачного исчезновения.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Ошибка при добавлении видео с хромакеем: {ex.Message}");
         }
+    }
+
+
+    public double GetVideoFps(string videoPath)
+    {
+        // Используем FFmpeg для получения FPS видео через его метаданные
+        var mediaInfo = FFProbe.Analyse(videoPath);
+        return mediaInfo.PrimaryVideoStream.FrameRate;
     }
 
     public TimeSpan GetVideoDuration(string videoPath)
