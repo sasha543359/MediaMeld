@@ -157,19 +157,12 @@ public class VideoProcessingService : IVideoProcessingService
                              $"[ckout]fade=t=out:st={lastFullLoopEndTime}:d=0.01:alpha=1[fadeout];" +  // Мгновенное исчезновение после последнего полного повтора
                              $"[0:v][fadeout]overlay=0:0";
 
-            // Этап 1: Запуск FFMpeg для полных циклов с fade
-            string tempOutput = "temp_output.mp4";  // Временный файл для промежуточного результата
-
-            // Удаляем временный файл, если он существует
-            if (File.Exists(tempOutput))
-            {
-                File.Delete(tempOutput);
-            }
+            var TempVideoPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}_final_video.mp4");
 
             FFMpegArguments
                 .FromFileInput(backgroundVideoPath)  // Фон: видео
                 .AddFileInput(overlayVideoPath)      // Видеоролик с зелёным фоном
-                .OutputToFile(tempOutput, true, options => options
+                .OutputToFile(TempVideoPath, true, options => options
                     .WithCustomArgument($"-filter_complex \"{filterComplex}\"")
                     .OverwriteExisting() // Перезаписываем, если файл уже существует
                 )
@@ -180,15 +173,23 @@ public class VideoProcessingService : IVideoProcessingService
             // Этап 2: Если оставшееся время больше 1 секунды, добавляем хромакейное видео
             if (remainingSeconds >= 1)
             {
-                // Если оставшегося времени больше, чем длительность хромакейного видео, обрезаем его
-                double trimDuration = remainingSeconds > overlayDuration.TotalSeconds
-                    ? overlayDuration.TotalSeconds
-                    : remainingSeconds;
+                // Получаем путь к системной временной директории
+                string tempFolder = Path.GetTempPath();
+                string trimmedOverlayPath = Path.Combine(tempFolder, "trimmed_overlay.mp4");
 
-                // Обрезанное видео добавляется начиная с момента завершения последнего полного цикла
-                string finalFilterComplex = $"[1:v]loop=1:size={(int)(trimDuration * GetVideoFps(overlayVideoPath))},setpts=PTS-STARTPTS," +
-                                            $"chromakey=0x00FF00:0.2:0.1[ckout_remain];" +
-                                            $"[0:v][ckout_remain]overlay=0:0:enable='gte(t,{lastFullLoopEndTime})'";
+                // Удаляем временный файл, если он существует
+                if (File.Exists(trimmedOverlayPath))
+                {
+                    File.Delete(trimmedOverlayPath);
+                }
+
+                // Обрезаем хромакейное видео до нужной продолжительности
+                FFMpegArguments
+                    .FromFileInput(overlayVideoPath)
+                    .OutputToFile(trimmedOverlayPath, true, options => options
+                        .WithCustomArgument($"-t {remainingSeconds}") // Обрезаем до оставшегося времени
+                        .OverwriteExisting())
+                    .ProcessSynchronously();
 
                 // Удаляем выходной файл, если он уже существует
                 if (File.Exists(outputPath))
@@ -196,15 +197,15 @@ public class VideoProcessingService : IVideoProcessingService
                     File.Delete(outputPath);
                 }
 
-                // Применяем дополнительный фильтр с обрезанным видео для оставшегося времени
+                // Применяем фильтр с обрезанным видео для оставшегося времени, наложив его на фон
                 FFMpegArguments
-                    .FromFileInput(tempOutput)       // Обработанное временное видео
-                    .AddFileInput(overlayVideoPath)  // Хромакейное видео для обрезки
+                    .FromFileInput(TempVideoPath)           // Обработанное временное видео
+                    .AddFileInput(trimmedOverlayPath)       // Обрезанное хромакейное видео
                     .OutputToFile(outputPath, true, options => options
-                        .WithCustomArgument($"-filter_complex \"{finalFilterComplex}\"")
-                        .OverwriteExisting() // Перезаписываем, если файл уже существует
-                    )
-                    .ProcessSynchronously();  // Запуск синхронного процесса
+                        .WithCustomArgument($"-filter_complex \"[0:v]setpts=PTS-STARTPTS[main];[1:v]setpts=PTS-STARTPTS[ckout];[main][ckout]overlay=0:0:enable='gte(t,{lastFullLoopEndTime})'\"")
+                        .WithCustomArgument("-shortest")
+                        .OverwriteExisting())
+                    .ProcessSynchronously();
 
                 Console.WriteLine("Обрезанное видео добавлено.");
             }
@@ -216,7 +217,7 @@ public class VideoProcessingService : IVideoProcessingService
                     File.Delete(outputPath);
                 }
 
-                File.Move(tempOutput, outputPath);
+                File.Move(TempVideoPath, outputPath);
             }
 
             Console.WriteLine("Видео с хромакеем успешно добавлено.");
