@@ -10,6 +10,8 @@ using System;
 using DataAccess;
 using Microsoft.EntityFrameworkCore;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Telegram.Bot.Types.Enums;
+using System.Diagnostics;
 
 namespace TelegramBot.Services;
 
@@ -33,63 +35,115 @@ public class TelegramBotService
         _api_key_nowpayments = api_key_payments;
     }
 
+    public async Task HandleUpdateAsync(ITelegramBotClient botClient, Telegram.Bot.Types.Update update, CancellationToken cancellationToken)
+    {
+        if (update.Type == UpdateType.Message && update.Message.Text != null)
+        {
+            var messageText = update.Message.Text;
+
+            try
+            {
+                // Получаем ссылку для скачивания видео
+                var downloadUrl = await _videoService.GetTikTokDownloadUrl(messageText);
+
+                Guid guid = Guid.NewGuid();
+
+                // Путь, куда будет скачиваться видео
+                var savePath = $"C:\\Users\\sasha\\Desktop\\tiktokvideos\\{guid}.mp4";
+
+                // Скачиваем видео
+                await _videoService.DownloadVideo(downloadUrl, savePath);
+
+                // Путь к скачанному видео
+                var inputVideoPath = $"C:\\Users\\sasha\\Desktop\\tiktokvideos\\{guid}.mp4";
+
+                // Путь для сохранения обработанного видео
+                var outputVideoPath = $"C:\\Users\\sasha\\Desktop\\readyvideo\\{guid}.mp4";
+
+                // Обрабатываем видео
+                _videoService.ProcessVideo(inputVideoPath, outputVideoPath);
+
+                // Запускаем процесс Selenium для загрузки видео в Instagram
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = @"C:\Users\sasha\Desktop\PapichProject\SeleniumProject\bin\Debug\net8.0\SeleniumProject.exe",  // Укажите реальный путь к исполняемому файлу SeleniumProject
+                    Arguments = $"{outputVideoPath}"  // Передаем только обработанное видео
+                };
+
+                using (Process process = Process.Start(startInfo))
+                {
+                    process.WaitForExit();  // Ждем завершения процесса
+                }
+
+                // Отправляем сообщение пользователю, что видео обработано и опубликовано
+                await _botClient.SendTextMessageAsync(update.Message.Chat.Id, "Видео обработано и опубликовано!", cancellationToken: cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                // Ловим возможные ошибки
+                await _botClient.SendTextMessageAsync(update.Message.Chat.Id, $"Произошла ошибка: {ex.Message}", cancellationToken: cancellationToken);
+            }
+        }
+    }
+
+
     public void Start()
     {
         _botClient.StartReceiving(HandleUpdateAsync, HandleErrorAsync);
     }
 
-    private async Task HandleUpdateAsync(ITelegramBotClient botClient, Telegram.Bot.Types.Update update, CancellationToken cancellationToken)
-    {
-        // Получаем Telegram ID пользователя
-        long telegramUserId = update.Message?.From?.Id ?? update.CallbackQuery?.From?.Id ?? -100;
+    //private async Task HandleUpdateAsync(ITelegramBotClient botClient, Telegram.Bot.Types.Update update, CancellationToken cancellationToken)
+    //{
+    //    // Получаем Telegram ID пользователя
+    //    long telegramUserId = update.Message?.From?.Id ?? update.CallbackQuery?.From?.Id ?? -100;
 
-        if (update.Message != null && update.Message.Text != null)
-        {
-            long chatId = update.Message.Chat.Id;
+    //    if (update.Message != null && update.Message.Text != null)
+    //    {
+    //        long chatId = update.Message.Chat.Id;
 
-            if (update.Message.Text.StartsWith("/start"))
-            {
-                // Вызов метода для обработки команды /start
-                await HandleStartCommand(chatId);
-            }
-            else if (update.Message.Text.StartsWith("/menu"))
-            {
-                // Вызов метода для отображения главного меню
-                await ShowMainMenu(chatId);
-            }
-        }
-        else if (update.Message != null && update.Message.Video != null)
-        {
-            // Если сообщение содержит видео, обрабатываем загрузку
-            await HandleMessageUpdateAsync(telegramUserId, update);
-        }
-        else if (update.CallbackQuery != null)
-        {
-            long chatId = update.CallbackQuery.Message.Chat.Id;
-            string callbackData = update.CallbackQuery.Data;
+    //        if (update.Message.Text.StartsWith("/start"))
+    //        {
+    //            // Вызов метода для обработки команды /start
+    //            await HandleStartCommand(chatId);
+    //        }
+    //        else if (update.Message.Text.StartsWith("/menu"))
+    //        {
+    //            // Вызов метода для отображения главного меню
+    //            await ShowMainMenu(chatId);
+    //        }
+    //    }
+    //    else if (update.Message != null && update.Message.Video != null)
+    //    {
+    //        // Если сообщение содержит видео, обрабатываем загрузку
+    //        await HandleMessageUpdateAsync(telegramUserId, update);
+    //    }
+    //    else if (update.CallbackQuery != null)
+    //    {
+    //        long chatId = update.CallbackQuery.Message.Chat.Id;
+    //        string callbackData = update.CallbackQuery.Data;
 
-            // Обработка нажатий на кнопки
-            if (callbackData == "create_payment")
-            {
-                // Создание нового платежа
-                await HandleCreatePaymentCallback(chatId, _api_key_nowpayments, update);
-            }
-            else if (callbackData == "check_payment_status")
-            {
-                await HandleUpdatePaymentStatus(chatId, _api_key_nowpayments, update);
-            }
-            else if (callbackData == "upload_video")
-            {
-                // Вызов метода для загрузки видео
-                await HandleUploadVideoCallback(telegramUserId);
-            }
-            else if (callbackData == "back_to_menu")
-            {
-                // Возвращаем пользователя в главное меню
-                await ShowMainMenu(chatId);
-            }
-        }
-    }
+    //        // Обработка нажатий на кнопки
+    //        if (callbackData == "create_payment")
+    //        {
+    //            // Создание нового платежа
+    //            await HandleCreatePaymentCallback(chatId, _api_key_nowpayments, update);
+    //        }
+    //        else if (callbackData == "check_payment_status")
+    //        {
+    //            await HandleUpdatePaymentStatus(chatId, _api_key_nowpayments, update);
+    //        }
+    //        else if (callbackData == "upload_video")
+    //        {
+    //            // Вызов метода для загрузки видео
+    //            await HandleUploadVideoCallback(telegramUserId);
+    //        }
+    //        else if (callbackData == "back_to_menu")
+    //        {
+    //            // Возвращаем пользователя в главное меню
+    //            await ShowMainMenu(chatId);
+    //        }
+    //    }
+    //}
 
     // Метод для обработки сообщений и видео
     private async Task HandleMessageUpdateAsync(long chatId, Telegram.Bot.Types.Update update)

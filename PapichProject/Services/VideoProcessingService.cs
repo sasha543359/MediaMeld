@@ -20,39 +20,51 @@ public class VideoProcessingService : IVideoProcessingService
 
     public async Task<string> GetTikTokDownloadUrl(string videoUrl)
     {
-        using HttpClient client = new HttpClient();
-        string apiUrl = "https://tiktok-video-downloader-api.p.rapidapi.com/media";  // URL API для получения ссылки на скачивание
-
-        // Настройка заголовков для API запроса
-        client.DefaultRequestHeaders.Add("x-rapidapi-key", "ed5c3a695bmsh55130b52fc4014ap1e8e0fjsnb4e3d709d29a");  // Вставь сюда свой API ключ
-        client.DefaultRequestHeaders.Add("x-rapidapi-host", "tiktok-video-downloader-api.p.rapidapi.com");
-
-        // Настройка параметров запроса
-        var query = new UriBuilder(apiUrl);
-        query.Query = $"videoUrl={videoUrl}";
-
         try
         {
-            // Выполнение запроса
-            HttpResponseMessage response = await client.GetAsync(query.Uri);
-            response.EnsureSuccessStatusCode();  // Проверка успешного выполнения запроса
+            using HttpClient client = new HttpClient();
 
-            // Чтение результата как строки
-            string jsonResponse = await response.Content.ReadAsStringAsync();
+            // Построение запроса с корректной строкой запроса
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri($"https://tiktok-api23.p.rapidapi.com/api/download/video?url={Uri.EscapeDataString(videoUrl)}"),
+                Headers =
+            {
+                { "x-rapidapi-key", "6aebd4a500mshea1841310a4bb23p157005jsn21e83c6ca51c" },  // Ваш API ключ
+                { "x-rapidapi-host", "tiktok-api23.p.rapidapi.com" }
+            }
+            };
+
+            // Выполнение запроса
+            using var response = await client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            // Чтение и парсинг ответа
+            var jsonResponse = await response.Content.ReadAsStringAsync();
             var jsonData = JObject.Parse(jsonResponse);
 
-            // Извлечение ссылки на скачивание из ответа API
-            string downloadUrl = jsonData["downloadUrl"].ToString();
-            Console.WriteLine("Ссылка для скачивания видео: " + downloadUrl);
-
-            return downloadUrl;  // Возвращаем ссылку для скачивания
+            // Теперь используем ключ "play" для получения ссылки на видео
+            if (jsonData.ContainsKey("play"))
+            {
+                string downloadUrl = jsonData["play"].ToString();
+                Console.WriteLine("Ссылка для скачивания видео: " + downloadUrl);
+                return downloadUrl;
+            }
+            else
+            {
+                Console.WriteLine("Ссылка для скачивания не найдена.");
+                return null;
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Ошибка при получении ссылки: {ex.Message}");
+            Console.WriteLine($"Ошибка при получении ссылки на скачивание: {ex.Message}");
             return null;
         }
     }
+
+
 
     public async Task DownloadVideo(string downloadUrl, string savePath)
     {

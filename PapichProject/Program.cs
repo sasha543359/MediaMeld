@@ -17,6 +17,17 @@ internal class Program
 {
     static async Task Main(string[] args)
     {
+
+        var _videoService = new VideoProcessingService();
+
+        var downloadUrl = await _videoService.GetTikTokDownloadUrl("https://www.tiktok.com/@taylorswift/video/7288965373704064286");
+
+        // Путь, куда будет скачиваться видео
+        var savePath = @"C:\\Users\\sasha\\Desktop\\tiktokvideos\\video.mp4";
+
+        // Скачиваем видео
+        await _videoService.DownloadVideo(downloadUrl, savePath);
+
         //string video = $"C:\\Users\\sasha\\Desktop\\video.mp4";  // Указываем путь для сохранения видео
 
         //Console.WriteLine("Введите ссылку на видео с TikTok:");
@@ -32,7 +43,7 @@ internal class Program
         //    Console.WriteLine("Не удалось получить ссылку для скачивания видео.");
         //}
 
-        ProcessVideo($"C:\\Users\\sasha\\Desktop\\hm.mp4", $"C:\\Users\\sasha\\Desktop\\video1.mp4");
+        // ProcessVideo($"C:\\Users\\sasha\\Desktop\\hm.mp4", $"C:\\Users\\sasha\\Desktop\\video1.mp4");
 
         //VideoProcessingService.AddImageToVideo($"C:\\Users\\sasha\\Desktop\\video1.mp4",
         //                $"C:\\Users\\sasha\\Desktop\\win.png",
@@ -45,9 +56,9 @@ internal class Program
 
 
 
-        AddVideoWithChromaKey($"C:\\Users\\sasha\\Desktop\\video1.mp4",
-                              $"C:\\Users\\sasha\\Desktop\\testing.mov",
-                              $"C:\\Users\\sasha\\Desktop\\result.mp4"); 
+        //AddVideoWithChromaKey($"C:\\Users\\sasha\\Desktop\\video1.mp4",
+        //                     $"C:\\Users\\sasha\\Desktop\\testing.mov",
+        //                     $"C:\\Users\\sasha\\Desktop\\result.mp4");
     }
 
     static public void AddVideoWithChromaKey(string backgroundVideoPath, string overlayVideoPath, string outputPath)
