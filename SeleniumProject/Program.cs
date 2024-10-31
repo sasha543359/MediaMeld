@@ -36,7 +36,7 @@ internal class Program
     public static void PostVideo(ChromeDriver driver)
     {
         // Попытка найти элемент по XPath
-        var element = driver.FindElement(By.XPath("/html/body/div[6]/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[3]/div/div[4]/button"));
+        var element = driver.FindElement(By.XPath("/html/body/div[5]/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[3]/div/div[4]/button"));
 
         // Если элемент найден, выполняем нужный код
         if (element != null)
@@ -48,20 +48,20 @@ internal class Program
             Console.WriteLine("Элемент найден, выполняем действие.");
         }
 
-        driver.FindElement(By.XPath("/html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div/div/div[1]/div/div[2]/div/button")).Click();
+        driver.FindElement(By.XPath("/html/body/div[5]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div/div/div[1]/div/div[2]/div/button/div")).Click();
         Thread.Sleep(1000);
 
-        driver.FindElement(By.XPath("/html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div/div/div[1]/div/div[1]/div/div[3]")).Click();
+        driver.FindElement(By.XPath("/html/body/div[5]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div/div/div[1]/div/div[1]/div/div[3]/div")).Click();
         Thread.Sleep(1000);
 
-        driver.FindElement(By.XPath("/html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div/div")).Click();
+        driver.FindElement(By.XPath("/html/body/div[5]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div/div")).Click();
         Thread.Sleep(1000);
 
-        driver.FindElement(By.XPath("/html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div/div")).Click();
+        driver.FindElement(By.XPath("/html/body/div[5]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div/div")).Click();
         Thread.Sleep(1000);
 
-        driver.FindElement(By.XPath("/html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div/div")).Click();
-        Thread.Sleep(35000);
+        driver.FindElement(By.XPath("/html/body/div[5]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[1]/div/div/div/div[3]/div/div")).Click();
+        Thread.Sleep(60000);
 
         driver.Navigate().GoToUrl("https://www.instagram.com/");
     }
@@ -88,7 +88,22 @@ internal class Program
         driver.FindElement(by: By.XPath("/html/body/div[2]/div/div/div[2]/div/div/div[1]/div[1]/div[2]/div/div/div/div/div[2]/div[7]/div/span/div/div/div/div[1]/a[1]")).Click();
         Thread.Sleep(2000);
 
-        driver.FindElement(by: By.XPath("/html/body/div[5]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div/div[2]/div/button")).Click();
+        var element = driver.FindElement(By.XPath("/html/body/div[5]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div/div[2]/div/button"));
+
+        if (element != null)
+        {
+            Thread.Sleep(1000);
+            element.Click();
+            Thread.Sleep(1000);
+            // Ваш код здесь, если элемент найден
+            Console.WriteLine("Элемент найден, выполняем действие.");
+        }
+        else
+        {
+            driver.FindElement(by: By.XPath("/html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div/div[2]/div/button")).Click();
+        }
+
+
         Thread.Sleep(3000);
 
         UploadFile(path, new AutoItX3());

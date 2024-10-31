@@ -116,7 +116,7 @@ public class VideoProcessingService : IVideoProcessingService
             FFMpegArguments
                 .FromFileInput(inputVideoPath)
                 .OutputToFile(outputVideoPath, true, options => options
-                    .WithCustomArgument("-vf \"scale=1080:-1,pad=1080:1920:(ow-iw)/2:(oh-ih)/2\"") // Масштабируем и центрируем видео
+                    .WithCustomArgument("-vf \"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920\"") // Масштабируем и обрезаем до 1080x1920
                     .WithFramerate(60)  // Устанавливаем 60 FPS
                     .WithCustomArgument("-map_metadata -1")  // Удаление метаданных
                 )
