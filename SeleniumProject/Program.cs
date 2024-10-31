@@ -88,11 +88,12 @@ internal class Program
         driver.FindElement(by: By.XPath("/html/body/div[2]/div/div/div[2]/div/div/div[1]/div[1]/div[2]/div/div/div/div/div[2]/div[7]/div/span/div/div/div/div[1]/a[1]")).Click();
         Thread.Sleep(2000);
 
-        driver.FindElement(by: By.XPath("/html/body/div[6]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div/div[2]/div")).Click();
+        driver.FindElement(by: By.XPath("/html/body/div[5]/div[1]/div/div[3]/div/div/div/div/div/div/div/div[2]/div[1]/div/div/div[2]/div/button")).Click();
+        Thread.Sleep(3000);
 
         UploadFile(path, new AutoItX3());
 
-        Thread.Sleep(2000);  // Ждём завершения загрузки видео
+        Thread.Sleep(2000);
     }
 
     private static void UploadFile(string filePath, AutoItX3 autoIt)
