@@ -1,27 +1,39 @@
-# # MediaMed
+# MediaMed
 
-### Description
-**InstaVid Pro** is a C# application that enables users to download videos, clean their metadata, and customize them by adding a specified PNG image and video footage to the bottom of the screen. The app then exports the edited video and automates the process of uploading it to Instagram.
+**Description**
 
-### Features
-- **Download Videos**: Download videos directly from TikTok or other sources.
-- **Remove Metadata**: Clean all metadata from the video for privacy and optimization.
-- **Custom Overlay**: Add a PNG image and video overlay to the bottom part of the screen.
-- **Export**: Export the customized video in the specified format.
-- **Instagram Upload**: Upload the edited video directly to Instagram, making it ready for sharing.
+InstaVid Pro is a C# application that automates video processing and uploading for social media. This application receives a TikTok video link through a Telegram bot, downloads the video to the local PC, processes it using FFmpeg, and then uploads the edited video to Instagram via Selenium. Additionally, the application uses AutoIt to automate the file selection process for uploading.
 
-### Technology Stack
+**Features**
+
+- **Video Download**: Downloads videos directly from TikTok through a Telegram bot link.
+- **Video Processing**: Processes the downloaded video using FFmpeg, allowing for custom overlays and format adjustments.
+- **Instagram Upload**: Automates the process of uploading the processed video to Instagram using Selenium.
+- **Automated File Selection**: Uses AutoIt to select the correct video file during the Instagram upload process.
+
+**Technology Stack**
+
 - **C#**
 - **FFmpeg** for video processing
-- **Instagram API** (or third-party library) for uploading
-- **RapidAPI** for video downloading
+- **Selenium** for automated Instagram uploads
+- **AutoIt** for file selection
+- **Telegram Bot** for receiving TikTok video links
 
-### Prerequisites
-To run this application, you need to install **FFmpeg** for video processing.
+**Prerequisites**
 
-- Download FFmpeg from [Gyan's FFmpeg Builds](https://www.gyan.dev/ffmpeg/builds/).
-- Add the path to `ffmpeg.exe` in your system's environment variables, or place it in a folder in your project and configure the binary path in the code:
+To run this application, you need to install the following:
 
-```csharp
-GlobalFFOptions.Configure(options => options.BinaryFolder = @"C:\path\to\ffmpeg\bin");
-```
+1. **FFmpeg** for video processing:
+   - Download FFmpeg from [Gyan's FFmpeg Builds](https://www.gyan.dev/ffmpeg/builds/).
+   - Add the path to `ffmpeg.exe` in your system's environment variables, or place it in a folder within your project and configure the binary path in the code:
+     ```csharp
+     GlobalFFOptions.Configure(options => options.BinaryFolder = @"C:\path\to\ffmpeg\bin");
+     ```
+
+2. **AutoIt** for automated file selection:
+   - Download AutoIt from [this link](https://www.autoitscript.com/site/autoit/downloads/).
+   - This enables the application to interact with the file selection dialog on the PC for Instagram uploads.
+
+---
+
+This section should be straightforward to add to your README file. It covers all necessary information and setup instructions for users to run the application effectively.
