@@ -1,8 +1,6 @@
-# MediaMed
-
 **Description**
 
-InstaVid Pro is a C# application that automates video processing and uploading for social media. This application receives a TikTok video link through a Telegram bot, downloads the video to the local PC, processes it using FFmpeg, and then uploads the edited video to Instagram via Selenium. Additionally, the application uses AutoIt to automate the file selection process for uploading.
+This is a C# application that automates video processing and uploading for social media. This application receives a TikTok video link through a Telegram bot, downloads the video to the local PC, processes it using FFmpeg, and then uploads the edited video to Instagram via Selenium. Additionally, the application uses AutoIt to automate the file selection process for uploading.
 
 **Features**
 
@@ -35,5 +33,3 @@ To run this application, you need to install the following:
    - This enables the application to interact with the file selection dialog on the PC for Instagram uploads.
 
 ---
-
-This section should be straightforward to add to your README file. It covers all necessary information and setup instructions for users to run the application effectively.
