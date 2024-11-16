@@ -1,4 +1,6 @@
-﻿using TelegramBot.Services;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using TelegramBot.Services;
 using VideoProcessing;
 using VideoProcessing.Services;
 
@@ -11,13 +13,14 @@ internal class Program
         // Ваш API-ключ для Telegram бота
         string token = "7946448900:AAGJZqNHXqTQ44XDW38zhdhHTmkkyu4Tjcg";
 
-        IVideoProcessingService videoService = new VideoProcessingService();
-
-        var telegramBotService = new TelegramBotService(token, videoService);
-
-        telegramBotService.Start();
-
-        Console.WriteLine("Бот запущен. Нажмите Enter для завершения.");
-        Console.ReadLine();
+        Host.CreateDefaultBuilder(args)
+            .UseWindowsService() // Настройка как Windows-служба
+            .ConfigureServices((hostContext, services) =>
+            {
+                services.AddSingleton<IVideoProcessingService, VideoProcessingService>();
+                services.AddHostedService<TelegramService>(); 
+            })
+            .Build()
+            .Run();
     }
 }
